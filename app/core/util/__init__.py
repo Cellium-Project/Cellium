@@ -4,12 +4,13 @@ from app.core.util.mp_manager import (
     run_in_process,
     run_in_process_async
 )
-from app.core.util.components_loader import load_components
+from app.core.util.components_loader import load_components, load_component_config
 
 __all__ = [
     "MultiprocessManager",
     "get_multiprocess_manager",
     "run_in_process",
     "run_in_process_async",
-    "load_components"
+    "load_components",
+    "load_component_config"
 ]

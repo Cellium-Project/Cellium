@@ -53,8 +53,15 @@ def get_config_path() -> pathlib.Path:
     return config_path
 
 
-def load_component_config(config_path: pathlib.Path) -> Dict[str, Any]:
-    """加载组件配置文件"""
+def load_component_config(config_path: pathlib.Path = None) -> Dict[str, Any]:
+    """加载组件配置文件
+    
+    Args:
+        config_path: 配置文件路径，默认使用 settings.yaml
+    """
+    if config_path is None:
+        config_path = get_config_path()
+    
     if not config_path.exists():
         logger.warning(f"配置文件不存在: {config_path}")
         return {"enabled_components": []}

@@ -5,3 +5,10 @@ enabled_components:
   - app.components.greeter.Greeter
   - app.components.jsontest.JsonTest
   - app.components.jstest.JsTest
+
+# 窗口配置
+window:
+  width: 1200
+  height: 800
+  # 是否移除原生标题栏（true: 无标题栏, false: 显示原生标题栏）
+  remove_titlebar: true

@@ -33,6 +33,7 @@ from ..bus.event_bus import event_bus
 from ..bus.events import EventType
 from ..bus.event_models import FadeOutEvent
 from ..handler.message_handler import MessageHandler
+from ..util.components_loader import load_component_config
 from ..di.container import get_container
 
 WM_COMMAND = 0x0111
@@ -280,6 +281,12 @@ class MainWindow:
         self.app_icon = None
         
         self.calculator = None
+        
+        config = load_component_config()
+        window_config = config.get('window', {})
+        self.window_width = window_config.get('width', 800)
+        self.window_height = window_config.get('height', 600)
+        self.should_remove_titlebar = window_config.get('remove_titlebar', False)
     
     def _get_component(self, component_type):
         """从 DI 容器获取组件
@@ -450,7 +457,7 @@ class MainWindow:
     def create_window(self):
         try:
             self.webview = self.lib.mbCreateWebWindow(
-                0, None, 100, 100, 1024, 768
+                0, None, 100, 100, self.window_width, self.window_height
             )
             if not self.webview:
                 logger.error("[ERROR] 创建窗口失败")
@@ -630,8 +637,9 @@ class MainWindow:
         # 启动静态文件服务器并加载 HTML
         self.start_static_server()
         self.load_html_from_server()
-        #系统原生标题栏，注释后启用
-        self.remove_titlebar()
+        
+        if self.should_remove_titlebar:
+            self.remove_titlebar()
 
         user32.ShowWindow(self.hwnd, 1)
         user32.SetForegroundWindow(self.hwnd)
