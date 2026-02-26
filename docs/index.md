@@ -842,15 +842,13 @@ result = handler.handle_message("calculator:calc:1+1")
 桥接层封装 Python 与 MiniBlink 浏览器引擎的通信。
 
 ```python
-from app.core import MiniBlinkBridge
+from app.core.window import MainWindow
 
-# 组件中通过 MainWindow 获取 bridge
+# 组件中通过 MainWindow 单例获取 bridge
 class MyComponent:
-    def __init__(self, bridge):
-        self.bridge = bridge
-    
     def update_ui(self, value):
-        self.bridge.set_element_value('output', value)
+        window = MainWindow.get_instance()
+        window.bridge.set_element_value('output', value)
 ```
 
 #### 核心方法

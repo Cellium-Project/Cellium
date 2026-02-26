@@ -515,3 +515,92 @@ Files created in this tutorial:
 | `index.html` | Frontend page (needs modification or creation) |
 
 Through this tutorial, you've mastered the basic flow of Cellium component development. Similarly, you can create components with any functionality by inheriting from `BaseCell` and defining methods with the `_cmd_` prefix.
+
+## 12. Backend Push JavaScript (RunJS)
+
+Cellium supports **backend actively pushing JavaScript to frontend**, enabling real-time updates, timed push, and other features.
+
+### Basic Principle
+
+The backend uses MiniBlink's `mbRunJs` interface to directly execute JavaScript code on the frontend. The framework is encapsulated in `MiniBlinkBridge`, accessible via `MainWindow.get_instance().bridge`.
+
+### Get Bridge
+
+```python
+from app.core.window import MainWindow
+
+# Get MainWindow singleton
+window = MainWindow.get_instance()
+
+# Get bridge object
+bridge = window.bridge
+```
+
+### Send JavaScript
+
+```python
+# Send JS code to execute
+bridge.send_to_js("alert('Hello from backend!');")
+
+# Modify page element
+bridge.send_to_js("document.getElementById('my-div').innerHTML = 'Updated!';")
+```
+
+### Complete Example: Timed Time Push
+
+**Backend Component:**
+
+```python
+# app/components/jstest.py
+# -*- coding: utf-8 -*-
+import threading
+import time
+from app.core.interface.base_cell import BaseCell
+
+
+class JsTest(BaseCell):
+    def __init__(self):
+        threading.Thread(target=self._run_time_pusher, daemon=True).start()
+
+    @property
+    def cell_name(self) -> str:
+        return "jstest"
+
+    def _run_time_pusher(self):
+        while True:
+            from app.core.window import MainWindow
+            window = MainWindow.get_instance()
+            if window and window.bridge:
+                from datetime import datetime
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                script = f"document.getElementById('current-time').textContent = 'Current Time: {current_time}';"
+                window.bridge.send_to_js(script)
+                time.sleep(60)  # Push every 60 seconds
+            else:
+                time.sleep(1)
+```
+
+**Frontend:**
+
+```html
+<div id="current-time">Waiting for connection...</div>
+```
+
+### API Reference
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `send_to_js(script)` | Send JS code to execute | `bridge.send_to_js("alert('hi')")` |
+| `set_element_value(element_id, value)` | Set element value | `bridge.set_element_value('output', '2')` |
+| `get_element_value(element_id, callback)` | Get element value (async) | `bridge.get_element_value('input', callback)` |
+
+### Notes
+
+1. **Wait for window ready**: When component initializes, the window may not be created yet. Poll and wait for `MainWindow.get_instance()` to return a valid object before executing JS
+
+2. **Alert callback**: If `mbOnAlertBox` callback is set, native alert will be intercepted. To use native alert, disable this callback:
+   ```python
+   # In bridge, comment out _setup_alert_callback() call
+   ```
+
+3. **Thread safety**: `send_to_js` can be called from child threads, the framework handles thread safety

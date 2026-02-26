@@ -46,8 +46,9 @@ class MiniBlinkBridge:
         """
         try:
             logger.debug(f"[BRIDGE] 发送JS: {script[:100]}")
+            frame_id = self._get_frame_id()
             self.lib.mbRunJs(
-                self.webview, None,
+                self.webview, frame_id,
                 script.encode('utf-8'),
                 True, None, None, None
             )
@@ -55,6 +56,16 @@ class MiniBlinkBridge:
             logger.error(f"[ERROR] 发送 JS 失败: {e}")
             import traceback
             logger.error(f"[ERROR] 堆栈: {traceback.format_exc()}")
+    
+    def _get_frame_id(self):
+        """获取主帧 ID"""
+        try:
+            frame_id = self.lib.mbWebFrameGetMainFrame(self.webview)
+            logger.debug(f"[BRIDGE] mbWebFrameGetMainFrame 返回: {frame_id}, webview: {self.webview}")
+            return frame_id if frame_id else self.webview
+        except Exception as e:
+            logger.error(f"[BRIDGE] mbWebFrameGetMainFrame 失败: {e}")
+            return self.webview
     
     def eval_js(self, expression):
         """在全局作用域执行 JS 表达式
@@ -65,8 +76,9 @@ class MiniBlinkBridge:
         try:
             script = f"try {{ {expression} }} catch(e) {{ console.error('JS Error:', e.message); }}"
             logger.debug(f"[BRIDGE] evalJS: {expression[:100]}")
+            frame_id = self._get_frame_id()
             self.lib.mbRunJs(
-                self.webview, None,
+                self.webview, frame_id,
                 script.encode('utf-8'),
                 True, None, None, None
             )
@@ -111,7 +123,8 @@ class MiniBlinkBridge:
         )
         
         cb = MB_RUNJS_CALLBACK(js_callback)
-        self.lib.mbRunJS(self.webview, None, script.encode('utf-8'), True, cb, None, None)
+        frame_id = self._get_frame_id()
+        self.lib.mbRunJs(self.webview, frame_id, script.encode('utf-8'), True, cb, None, None)
     
     def _on_navigation_callback(self, webview, param, navigation_type, url):
         """导航回调"""
@@ -269,6 +282,6 @@ class MiniBlinkBridge:
     def setup_all_callbacks(self):
         """设置所有回调"""
         self._setup_navigation_callback()
-        self._setup_alert_callback()
+        # self._setup_alert_callback()  # 临时禁用，让原生 alert 弹出
         self._setup_js_query_callback()
         self._setup_console_callback()

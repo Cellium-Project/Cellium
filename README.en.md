@@ -838,15 +838,13 @@ result = handler.handle_message("calculator:calc:1+1")
 The bridge layer encapsulates communication between Python and the MiniBlink browser engine.
 
 ```python
-from app.core import MiniBlinkBridge
+from app.core.window import MainWindow
 
-# Components get bridge through MainWindow
+# Components get bridge through MainWindow singleton
 class MyComponent:
-    def __init__(self, bridge):
-        self.bridge = bridge
-    
     def update_ui(self, value):
-        self.bridge.set_element_value('output', value)
+        window = MainWindow.get_instance()
+        window.bridge.set_element_value('output', value)
 ```
 
 #### Core Methods

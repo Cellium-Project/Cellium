@@ -513,3 +513,82 @@ class Greeter(BaseCell):
 | `index.html` | 前端页面（需修改或新建） |
 
 通过本教程，你已经掌握了 Cellium 组件开发的基本流程。类似的，你可以创建任意功能的组件，只需继承 `BaseCell` 并定义 `_cmd_` 前缀的方法即可。
+
+## 12. 后端推送 JavaScript（RunJS）
+
+Cellium 支持**后端主动向前端推送 JavaScript**，实现实时更新、定时推送等功能。
+
+### 基本原理
+
+后端通过 MiniBlink 的 `mbRunJs` 接口，直接在前端执行 JavaScript 代码。框架封装在 `MiniBlinkBridge` 中，可通过 `MainWindow.get_instance().bridge` 获取。
+
+### 获取 Bridge
+
+```python
+from app.core.window import MainWindow
+
+# 获取 MainWindow 单例
+window = MainWindow.get_instance()
+
+# 获取 bridge 对象
+bridge = window.bridge
+```
+
+### 发送 JavaScript
+
+```python
+# 发送 JS 代码执行
+bridge.send_to_js("alert('Hello from backend!');")
+
+# 修改页面元素
+bridge.send_to_js("document.getElementById('my-div').innerHTML = 'Updated!';")
+```
+
+### 完整示例：定时推送时间
+
+**后端组件：**
+
+```python
+# app/components/jstest.py
+# -*- coding: utf-8 -*-
+import threading
+import time
+from app.core.interface.base_cell import BaseCell
+
+
+class JsTest(BaseCell):
+    def __init__(self):
+        threading.Thread(target=self._run_time_pusher, daemon=True).start()
+
+    @property
+    def cell_name(self) -> str:
+        return "jstest"
+
+    def _run_time_pusher(self):
+        while True:
+            from app.core.window import MainWindow
+            window = MainWindow.get_instance()
+            if window and window.bridge:
+                from datetime import datetime
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                script = f"document.getElementById('current-time').textContent = '当前时间: {current_time}';"
+                window.bridge.send_to_js(script)
+                time.sleep(60)  # 每 60 秒推送一次
+            else:
+                time.sleep(1)
+```
+
+**前端页面：**
+
+```html
+<div id="current-time">等待连接...</div>
+```
+
+### API 参考
+
+| 方法 | 说明 | 示例 |
+|------|------|------|
+| `send_to_js(script)` | 发送 JS 代码执行 | `bridge.send_to_js("alert('hi')")` |
+| `set_element_value(element_id, value)` | 设置元素值 | `bridge.set_element_value('output', '2')` |
+| `get_element_value(element_id, callback)` | 获取元素值（异步） | `bridge.get_element_value('input', callback)` |
+

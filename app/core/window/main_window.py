@@ -249,7 +249,18 @@ class StaticServer:
 
 class MainWindow:
 
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
+        if hasattr(self, '_initialized'):
+            return
+        self._initialized = True
+        
         self.project_root = _get_project_root()
         
         self.dll_dir = str(self.project_root / "dll")
@@ -286,6 +297,11 @@ class MainWindow:
         except Exception as e:
             logger.warning(f"获取组件失败 {component_type.__name__}: {e}")
         return None
+    
+    @classmethod
+    def get_instance(cls):
+        """获取 MainWindow 单例实例"""
+        return cls._instance
     
     def load_window_icon(self):
         """加载并设置窗口图标"""
@@ -383,6 +399,7 @@ class MainWindow:
             'mbOnNavigation': ([ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p], None),
             'mbRunJs': ([ctypes.c_void_p, ctypes.c_void_p, ctypes.c_char_p, 
                         ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p], None),
+            'mbWebFrameGetMainFrame': ([ctypes.c_void_p], ctypes.c_void_p),
             'mbResponseQuery': ([ctypes.c_void_p, ctypes.c_int64, ctypes.c_int, ctypes.c_char_p], None),
             'mbOnJsQuery': ([ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p], None),
         }
