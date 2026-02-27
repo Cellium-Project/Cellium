@@ -12,3 +12,5 @@ window:
   height: 800
   # 是否移除原生标题栏（true: 无标题栏, false: 显示原生标题栏）
   remove_titlebar: true
+  # 是否允许通过窗口边缘拖动调整大小（仅在 remove_titlebar 为 true 时有效）
+  resizable_border: true

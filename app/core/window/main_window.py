@@ -287,6 +287,7 @@ class MainWindow:
         self.window_width = window_config.get('width', 800)
         self.window_height = window_config.get('height', 600)
         self.should_remove_titlebar = window_config.get('remove_titlebar', False)
+        self.resizable_border = window_config.get('resizable_border', False)
     
     def _get_component(self, component_type):
         """从 DI 容器获取组件
@@ -597,7 +598,12 @@ class MainWindow:
             WS_THICKFRAME = 0x00040000
             
             current_style = user32.GetWindowLongPtrW(self.hwnd, GWL_STYLE)
-            new_style = current_style & ~WS_CAPTION & ~WS_THICKFRAME
+            
+            if self.resizable_border:
+                new_style = current_style & ~WS_CAPTION
+            else:
+                new_style = current_style & ~WS_CAPTION & ~WS_THICKFRAME
+            
             user32.SetWindowLongPtrW(self.hwnd, GWL_STYLE, new_style)
             
             SWP_FRAMECHANGED = 0x0020
@@ -605,7 +611,6 @@ class MainWindow:
                               SWP_FRAMECHANGED | 0x0010 | 0x0004 | 0x0001 | 0x0002)
             
             user32.ShowWindow(self.hwnd, 3)
-            logger.info("标题栏已移除")
         except Exception as e:
             logger.error(f"移除标题栏失败: {e}")
     
