@@ -23,24 +23,20 @@ class DIContainer:
             cls._instance._singletons: Dict[str, Any] = {}
         return cls._instance
     
-    def register(self, service_type: Type, instance: Any = None, singleton: bool = True):
+    def register(self, service_type: Type, instance: Any, singleton: bool = True):
         """注册服务
         
         Args:
             service_type: 服务类型（类或协议）
-            instance: 可选，预配置实例
+            instance: 预配置实例
             singleton: 是否单例模式
         """
         key = f"{service_type.__module__}.{service_type.__name__}"
         
-        if instance is not None:
-            self._services[key] = (instance, singleton)
-            if singleton:
-                self._singletons[key] = instance
-            logger.info(f"已注册服务: {service_type.__name__} (singleton={singleton})")
-        else:
-            self._services[key] = (None, singleton)
-            logger.info(f"已注册工厂: {service_type.__name__}")
+        self._services[key] = (instance, singleton)
+        if singleton:
+            self._singletons[key] = instance
+        logger.info(f"已注册服务: {service_type.__name__} (singleton={singleton})")
     
     def register_factory(self, service_type: Type, factory: Callable):
         """注册工厂函数
@@ -114,17 +110,8 @@ def get_container() -> DIContainer:
 
 
 def inject(service_type: Type):
-    """依赖注入装饰器
+    """依赖注入装饰器"""
     
-    使用示例:
-        class Calculator:
-            bus = inject(EventBus)
-            mp_manager = inject(MultiprocessManager)
-            
-            def calculate(self, expr):
-                # 直接使用 self.bus 和 self.mp_manager
-                pass
-    """
     def decorator(prop_func):
         @property
         def wrapper(self):
@@ -157,13 +144,8 @@ class _InjectMarker:
 
 
 def injected(service_type: Type) -> _InjectMarker:
-    """标记属性需要注入
-    
-    使用示例:
-        class Calculator(metaclass=AutoInjectMeta):
-            bus = injected(EventBus)
-            mp_manager = injected(MultiprocessManager)
-    """
+    """标记属性需要注入"""
+
     return _InjectMarker(service_type)
 
 
