@@ -3,6 +3,8 @@
 多进程管理器
 """
 
+from __future__ import annotations
+
 import atexit
 import logging
 import multiprocessing
