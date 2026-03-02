@@ -175,13 +175,19 @@ class MessageHandler:
         """处理 JsQuery 消息
         
         统一命令分发：只要包含冒号，就尝试按组件协议分发
+        支持 :async 后缀实现异步执行
         """
         msg_str = event.message
         
         if not msg_str or ':' not in msg_str:
             return None
         
-        return self._handle_cell_command(msg_str)
+        async_exec = False
+        if msg_str.endswith(':async'):
+            async_exec = True
+            msg_str = msg_str[:-6]
+        
+        return self._handle_cell_command(msg_str, async_exec=async_exec)
     
     def _on_python_command(self, command):
         """处理来自 JavaScript 的命令

@@ -481,6 +481,10 @@
 
                 <div class="greeter-section">
                     <h3>RunJs 测试</h3>
+                    <div class="greeter-buttons">
+                        <button class="greeter-btn greeter-btn-primary" id="btn-delay-no-callback">测试(有async)</button>
+                        <button class="greeter-btn greeter-btn-secondary" id="btn-delay-with-callback">测试(无async)</button>
+                    </div>
                     <div id="current-time" style="font-size: 18px; color: #1a73e8; padding: 16px; background: rgba(26, 115, 232, 0.1); border-radius: 8px; text-align: center;">等待连接...</div>
                 </div>
             </div>
@@ -694,6 +698,21 @@
             });
         }
 
+        function setupDelayTestButtons() {
+            document.getElementById('btn-delay-no-callback').addEventListener('click', function() {
+                logEvent('开始测试延迟(有async)');
+                window.mbQuery(0, 'jstest:delay:3:async', null);
+            });
+
+            document.getElementById('btn-delay-with-callback').addEventListener('click', function() {
+                const resultDiv = document.getElementById('current-time');
+                logEvent('开始测试延迟(无async)');
+                window.mbQuery(0, 'jstest:delay:3', function(response) {
+                    logEvent('等待回调完成: ' + response);
+                });
+            });
+        }
+
         const originalAlert = window.alert;
         window.alert = function(message) {
             if (typeof message === 'string' && message.startsWith('__CALC_RESULT__:')) {
@@ -711,12 +730,14 @@
                 setupTitlebarButtons();
                 setupGreeterButtons();
                 setupJsonTestButtons();
+                setupDelayTestButtons();
             });
         } else {
             setupCalculatorButtons();
             setupTitlebarButtons();
             setupGreeterButtons();
             setupJsonTestButtons();
+            setupDelayTestButtons();
         }
 
         console.log('计算器已加载');
