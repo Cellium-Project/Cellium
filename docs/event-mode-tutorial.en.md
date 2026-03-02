@@ -804,13 +804,17 @@ Event Mode and Command Mode are the two main communication methods in Cellium, e
 
 | Feature | Command Mode | Event Mode |
 |---------|--------------|------------|
-| **Communication** | One-to-one request-response | One-to-many publish-subscribe |
+| **Communication** | Frontend ↔ Backend Component | Backend Internal Only |
 | **Coupling** | Caller and handler coupled | Publisher and subscriber decoupled |
 | **Execution Timing** | Synchronous call, executes immediately | Asynchronous trigger, delayed execution |
 | **Return Value** | Has return value | Usually no return value |
-| **Use Case** | RPC calls, method execution | Decoupled communication, broadcast notifications |
+| **Use Case** | RPC calls, method execution | Decoupled communication (Backend), broadcast notifications |
 | **Flexibility** | Static call relationships | Dynamic subscription relationships |
 | **Error Handling** | Throws exceptions directly | Propagates errors through error events |
+
+> ⚠️ **Important**: The event system is for **internal backend use only**. Frontend cannot directly publish events to the event bus. For frontend ↔ backend communication:
+> - Frontend → Backend: use `mbQuery('cell:command:args')`
+> - Backend → Frontend: use `run_js('JS code')`
 
 ### 11.2 When to Use Command Mode
 

@@ -40,7 +40,7 @@ window.mbQuery(0, 'greeter:greet:Hello', function(){})
 
 ### 2. Event Mode
 
-Publish-subscribe based event bus, suitable for **decoupled notification** scenarios.
+Publish-subscribe based event bus, suitable for **backend component decoupled notification** scenarios.
 
 ```python
 # Backend component subscribes to events
@@ -51,8 +51,9 @@ class Logger:
     def on_login(self, event_name, **kwargs):
         print(f"User logged in: {kwargs.get('username')}")
 
-# Frontend publishes event
-window.mbQuery(0, 'bus:publish:user.login:{"username":"Alice"}', function(){})
+# Backend publishes event
+from app.core.bus import event_bus
+event_bus.publish("user.login", username="Alice")
 ```
 
 **Features**:
@@ -60,13 +61,15 @@ window.mbQuery(0, 'bus:publish:user.login:{"username":"Alice"}', function(){})
 - No return value (asynchronous notification)
 - Ideal for cross-component decoupled communication
 
+> 💡 **Note**: The event system is for **internal backend use** only, enabling decoupled communication between components. Frontend cannot directly publish events to the event bus. To notify backend from frontend, use `mbQuery('cell:command:args')` to call component methods.
+
 ### Mode Comparison
 
 | Feature | Command Mode | Event Mode |
 |---------|-------------|------------|
-| Communication | Frontend → Backend Component | Frontend → EventBus → Multiple Subscribers |
+| Communication | Frontend → Backend Component | Backend Component → EventBus → Multiple Subscribers |
 | Return Value | Yes (sync response) | No (async notification) |
-| Use Case | Request-Response | Decoupled Notification |
+| Use Case | Request-Response | Decoupled Notification (Backend Internal) |
 
 > 💡 **This tutorial** focuses on **Command Mode** as it's more intuitive for beginners. For detailed Event Mode usage, see [README.md](file:///c:/Users/Administrator/Desktop/app/python-miniblink/README.md#事件总线-eventbus).
 

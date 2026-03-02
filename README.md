@@ -282,20 +282,26 @@ flowchart TB
 ```mermaid
 flowchart TD
     A["用户操作"] --> B["JavaScript HTML/CSS"]
-    B -->|"window.mbQuery()"| C["MiniBlinkBridge 接收回调"]
+    B -->|"window.mbQuery(0, 'cell:command:args')"| C["MiniBlinkBridge 接收回调"]
     C --> D["MessageHandler 命令解析与路由"]
 
     D --> E{处理方式}
-    E -->|"事件模式"| F["EventBus 事件"]
-    E -->|"直接调用"| G["直接方法调用"]
+    E -->|"命令模式"| G["直接方法调用"]
 
-    F --> H["组件处理"]
     G --> I["返回结果"]
-    H --> J["返回结果"]
+    I -->|"→"| K["JavaScript 更新 UI"]
 
-    J -->|"->"| K["JavaScript 更新 UI"]
-    I -->|"->"| K
+    subgraph 后端内部
+    L["组件A"] -->|event_bus.publish| M["EventBus"]
+    M -->|事件通知| N["组件B"]
+    M -->|事件通知| O["组件C"]
+    end
+
+    N -->|"run_js"| K
+    O -->|"run_js"| K
 ```
+
+> **注意**：事件系统是**后端内部**使用的，用于组件间解耦通信。前端无法直接发布事件。前端→后端用 `mbQuery()`，后端→前端用 `run_js()`。
 
 ## 目录结构
 

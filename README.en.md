@@ -268,20 +268,26 @@ flowchart TB
 ```mermaid
 flowchart TD
     A["User Action"] --> B["JavaScript HTML/CSS"]
-    B -->|mbQuery()| C["MiniBlinkBridge"]
+    B -->|window.mbQuery(0, 'cell:command:args')| C["MiniBlinkBridge"]
     C --> D["MessageHandler Command Parsing and Routing"]
     
     D --> E{Processing Mode}
-    E -->|"Event Mode"| F["EventBus Event"]
-    E -->|"Direct Call"| G["Direct Method Call"]
+    E -->|"Command Mode"| G["Direct Method Call"]
     
-    F --> H["Component Processing"]
     G --> I["Return Result"]
-    H --> J["Return Result"]
+    I -->|"→"| K["JavaScript Update UI"]
     
-    J -->|"->"| K["JavaScript Update UI"]
-    I -->|"->"| K
+    subgraph Backend Internal
+    L["ComponentA"] -->|event_bus.publish| M["EventBus"]
+    M -->|event notification| N["ComponentB"]
+    M -->|event notification| O["ComponentC"]
+    end
+    
+    N -->|"run_js"| K
+    O -->|"run_js"| K
 ```
+
+> **Note**: The event system is for **internal backend use only**. Frontend cannot directly publish events. Use `mbQuery()` for Frontend→Backend, and `run_js()` for Backend→Frontend.
 
 ## Directory Structure
 

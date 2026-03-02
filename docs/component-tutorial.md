@@ -40,7 +40,7 @@ window.mbQuery(0, 'greeter:greet:你好', function(){})
 
 ### 2. 事件模式（Event Mode）
 
-基于发布-订阅的事件总线，适用于**解耦通知**场景。
+基于发布-订阅的事件总线，适用于**后端组件间解耦通知**场景。
 
 ```python
 # 后端组件订阅事件
@@ -51,8 +51,9 @@ class Logger:
     def on_login(self, event_name, **kwargs):
         print(f"用户登录: {kwargs.get('username')}")
 
-# 前端发布事件
-window.mbQuery(0, 'bus:publish:user.login:{"username":"Alice"}', function(){})
+# 后端发布事件
+from app.core.bus import event_bus
+event_bus.publish("user.login", username="Alice")
 ```
 
 **特点**：
@@ -60,13 +61,15 @@ window.mbQuery(0, 'bus:publish:user.login:{"username":"Alice"}', function(){})
 - 无返回值（异步通知）
 - 适合跨组件的解耦通信
 
+> 💡 **注意**：事件系统是**后端内部**使用的，用于组件间解耦通信。前端无法直接发布事件到事件总线。前端如需通知后端，使用 `mbQuery('cell:command:args')` 调用组件方法。
+
 ### 模式对比
 
 | 特性 | 命令模式 | 事件模式 |
 |------|---------|---------|
-| 通信方式 | 前端 → 后端组件 | 前端 → EventBus → 多个订阅者 |
+| 通信方式 | 前端 → 后端组件 | 后端组件 → EventBus → 多个订阅者 |
 | 返回值 | 有（同步响应） | 无（异步通知） |
-| 适用场景 | 请求-响应 | 解耦通知 |
+| 适用场景 | 请求-响应 | 解耦通知（后端内部） |
 
 > 💡 **本教程**将主要介绍**命令模式**，因为它更直观，适合入门学习。事件模式的详细用法请参考 [事件模式教程](event-mode-tutorial.md) 或 [README.md](README.md#事件总线-eventbus)。
 

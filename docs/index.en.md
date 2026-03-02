@@ -199,19 +199,23 @@ flowchart TB
 ```mermaid
 flowchart TD
     A["User Action"] --> B["JavaScript HTML/CSS"]
-    B -->|window.mbQuery(0, 'calculator:calc:1+1')| C["MiniBlinkBridge Receives Callback"]
+    B -->|window.mbQuery(0, 'cell:command:args')| C["MiniBlinkBridge Receives Callback"]
     C --> D["MessageHandler Command Parsing and Routing"]
     
     D --> E{Processing Mode}
-    E -->|"Event Mode"| F["EventBus Event"]
-    E -->|"Direct Call"| G["Direct Method Call"]
+    E -->|"Command Mode"| G["Direct Method Call"]
     
-    F --> H["Component Processing"]
     G --> I["Return Result"]
-    H --> J["Return Result"]
+    I -->|"→"| K["JavaScript Update UI"]
     
-    J -->|"→"| K["JavaScript Update UI"]
-    I -->|"→"| K
+    subgraph Backend Internal
+    L["ComponentA"] -->|event_bus.publish| M["EventBus"]
+    M -->|event notification| N["ComponentB"]
+    M -->|event notification| O["ComponentC"]
+    end
+    
+    N -->|"run_js"| K
+    O -->|"run_js"| K
 ```
 
 ## Directory Structure

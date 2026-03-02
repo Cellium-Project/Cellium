@@ -441,17 +441,18 @@ event_bus.publish("order.paid", order_id="ORD-001")
 
 | 特性 | 命令模式 | 事件模式 |
 |------|---------|---------|
-| **通信方式** | 前端 → 后端组件（一对一） | 前端 → EventBus → 多个订阅者（一对多） |
+| **通信方式** | 前端 → 后端组件（一对一） | 后端组件 → EventBus → 多个订阅者（后端内部） |
 | **返回值** | 有（同步响应） | 无（异步通知） |
 | **耦合度** | 较高（调用者知道被调用者） | 低（发布者和订阅者互不知情） |
 | **灵活性** | 添加新功能需要修改调用方 | 添加新功能只需添加新订阅者 |
-| **适用场景** | 请求-响应、需要返回值的场景 | 解耦通知、一个动作触发多个响应 |
+| **适用场景** | 请求-响应、需要返回值的场景 | 解耦通知（后端内部）、一个动作触发多个后端响应 |
+
+> ⚠️ **重要说明**：事件系统是**后端内部**使用的，前端无法直接参与。前端需要通知后端时使用命令模式，后端需要通知前端时使用 `run_js()`。
 
 > 💡 **如何选择？**
-> - 需要用户点击按钮后获取结果 → 用命令模式
-> - 用户操作后需要同时更新多个界面 → 用事件模式
-> - 组件之间需要通信但不应该直接引用 → 用事件模式
-> - 简单的 CRUD 操作 → 用命令模式
+> - 前端需要获取后端结果 → 用命令模式
+> - 后端内部一个操作触发多个响应 → 用事件模式
+> - 后端需要通知前端更新 UI → 用 `run_js()`
 
 ## 7. 实战演练：完整的电商事件系统
 
@@ -629,110 +630,63 @@ if __name__ == "__main__":
 
 > 💡 **观察执行顺序**：你可以看到处理器按照优先级从高到低执行：高优先级的验证最先执行，低优先级的日志最后执行。这就是优先级控制的作用。
 
-## 8. 前端如何发布事件
+## 8. 事件系统与前端通信
 
-除了后端组件可以发布事件，前端也可以通过 `window.mbQuery()` 接口直接向事件总线发送事件。这是实现前后端解耦通信的重要方式。
+> ⚠️ **重要说明**：事件系统是**后端内部**使用的，用于组件间解耦通信。前端无法直接发布事件到事件总线。
 
-### 8.1 使用 window.mbQuery 发布事件
+### 8.1 前端如何与后端通信
 
-事件总线的命令格式为 `bus:publish:事件名:JSON数据`：
+前端与后端通信有两种方式：
 
-```javascript
-// 发布用户登录事件
-window.mbQuery(0, 'bus:publish:user.login:{"username":"张三","role":"管理员"}', function(){});
+| 方向 | 方式 | 说明 |
+|------|------|------|
+| 前端 → 后端 | `mbQuery('cell:command:args')` | 调用后端组件方法 |
+| 后端 → 前端 | `run_js('JS代码')` | 后端主动推送 JS 到前端执行 |
 
-// 发布订单创建事件
-window.mbQuery(0, 'bus:publish:order.created:{"order_id":"ORD-001","items":[{"name":"商品A","quantity":1}]}', function(){});
+### 8.2 后端通知前端的正确方式
+
+如果你需要在后端事件触发时通知前端，应该在事件处理器中使用 `run_js()` 推送：
+
+```python
+from app.core.bus import event
+
+@event("user.login")
+def handle_login(**kwargs):
+    username = kwargs.get("username")
+    # 业务逻辑处理
+    # ...
+    # 主动推送 JS 到前端
+    self.run_js(f"alert('用户 {username} 已登录')")
 ```
 
-### 8.2 前端事件发布示例
+或者更复杂的前端交互：
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>事件模式前端示例</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .event-log { 
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .log-item {
-            padding: 8px;
-            margin: 5px 0;
-            background-color: white;
-            border-radius: 4px;
-            border-left: 4px solid #4CAF50;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>前端事件发布示例</h1>
-    
-    <div>
-        <button onclick="publishUserLogin()">发布用户登录事件</button>
-        <button onclick="publishOrderCreated()">发布订单创建事件</button>
-        <button onclick="publishCustomEvent()">发布自定义事件</button>
-    </div>
-    
-    <div class="event-log" id="eventLog">
-        <div style="color: #666;">事件日志将显示在这里...</div>
-    </div>
-    
-    <script>
-        function logEvent(message) {
-            var logDiv = document.getElementById('eventLog');
-            var time = new Date().toLocaleTimeString();
-            var logItem = document.createElement('div');
-            logItem.className = 'log-item';
-            logItem.innerHTML = `<strong>[${time}]</strong> ${message}`;
-            logDiv.insertBefore(logItem, logDiv.firstChild);
-        }
+```python
+@event("order.created")
+def handle_order(**kwargs):
+    order_id = kwargs.get("order_id")
+    # 推送更新前端界面
+    self.run_js(f"updateOrderList('{order_id}')")
+```
+
+### 8.3 完整示例：后端事件触发前端更新
+
+```python
+from app.core.interface.base_cell import BaseCell
+from app.core.bus import event
+
+class OrderService(BaseCell):
+    @event("order.created")
+    def on_order_created(self, **kwargs):
+        order_id = kwargs.get("order_id")
+        total = kwargs.get("total_amount")
         
-        function publishUserLogin() {
-            var username = prompt("请输入用户名：", "张三");
-            if (username) {
-                window.mbQuery(0, 'bus:publish:user.login:{"username":"' + username + '","login_time":"' + new Date().toLocaleString() + '"}', function(){});
-                logEvent(`发布 user.login 事件，用户：${username}`);
-            }
-        }
-        
-        function publishOrderCreated() {
-            var orderData = JSON.stringify({
-                order_id: "ORD-" + Date.now().toString().slice(-6),
-                customer: "王五",
-                items: [
-                    {name: "商品A", quantity: 1, price: 99.00},
-                    {name: "商品B", quantity: 2, price: 49.00}
-                ],
-                total_amount: 197.00
-            });
-            window.mbQuery(0, 'bus:publish:order.created:' + orderData, function(){});
-            logEvent(`发布 order.created 事件，订单数据已发送`);
-        }
-        
-        function publishCustomEvent() {
-            var eventName = prompt("请输入事件名：", "my.custom.event");
-            var eventData = prompt("请输入事件数据（JSON格式）：", '{"message":"Hello Event"}');
-            if (eventName && eventData) {
-                window.mbQuery(0, 'bus:publish:' + eventName + ':' + eventData, function(){});
-                logEvent(`发布自定义事件：${eventName}`);
-            }
-        }
-    </script>
-</body>
-</html>
+        # 推送更新前端 UI
+        script = f"""
+            document.getElementById('order-list').innerHTML += 
+                '<div class="order-item">订单 {order_id} - ¥{total}</div>';
+        """
+        self.run_js(script)
 ```
 
 ## 9. 常见问题
