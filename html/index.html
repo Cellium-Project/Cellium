@@ -244,6 +244,9 @@
             height: 150px;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             padding: 12px;
             font-size: 12px;
             color: #70757a;
@@ -375,7 +378,7 @@
         }
 
         @media (min-width: 1200px) {
-            .calculator, .greeter-section {
+            .calculator, .greeter-section, #event-log {
                 width: 360px;
             }
         }
@@ -478,19 +481,20 @@
                     <div class="greeter-result-label">结果：</div>
                     <div class="greeter-result" id="json-result">点击按钮测试...</div>
                 </div>
-
-                <div class="greeter-section">
-                    <h3>RunJs 测试</h3>
-                    <div class="greeter-buttons">
-                        <button class="greeter-btn greeter-btn-primary" id="btn-delay-no-callback">测试(有async)</button>
-                        <button class="greeter-btn greeter-btn-secondary" id="btn-delay-with-callback">测试(无async)</button>
-                    </div>
-                    <div id="current-time" style="font-size: 18px; color: #1a73e8; padding: 16px; background: rgba(26, 115, 232, 0.1); border-radius: 8px; text-align: center;">等待连接...</div>
-                </div>
             </div>
         </div>
 
-        <div id="event-log">
+        <div class="column-container">
+            <div class="greeter-section">
+                <h3>RunJs 测试</h3>
+                <div class="greeter-buttons">
+                    <button class="greeter-btn greeter-btn-primary" id="btn-delay-no-callback">测试 (有 async)</button>
+                    <button class="greeter-btn greeter-btn-secondary" id="btn-delay-with-callback">测试 (无 async)</button>
+                </div>
+                <div id="current-time" style="font-size: 18px; color: #1a73e8; padding: 16px; background: rgba(26, 115, 232, 0.1); border-radius: 8px; text-align: center;">等待连接...</div>
+            </div>
+
+            <div id="event-log">
             <div class="log-content">
                 <div class="log-entry">准备就绪...</div>
             </div>
