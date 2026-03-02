@@ -392,10 +392,10 @@ class PriorityComponent:
 Use namespaces to avoid event name conflicts, suitable for multi-module collaboration.
 
 ```python
-from app.core.bus import set_namespace, event
+from app.core.bus import set_event_namespace, event
 
 # Set namespace prefix
-set_namespace("myapp")
+set_event_namespace("myapp")
 
 # Event names automatically get prefix: myapp.user.login
 class UserModule:
@@ -837,7 +837,21 @@ window.mbQuery(0, 'filemanager:write:C:/test.txt:Hello World', function(customMs
 window.mbQuery(0, 'mycell:greet:Cellium', function(customMsg, response) {
     console.log(response);
 })
+
+// Async execution (time-consuming task), avoid blocking UI
+window.mbQuery(0, 'mycell:longtask:param:async', function(response) {
+    // No need to wait for result, can push result via run_js()
+});
 ```
+
+**Command Format**: `cell_name:command[:args][:async]`
+
+- `cell_name`: Component name
+- `command`: Command name
+- `args`: Optional argument
+- `:async`: Optional suffix, submits time-consuming tasks to thread pool to avoid blocking UI
+
+> 💡 **Tip**: Add `:async` suffix for time-consuming tasks, push result to frontend via `run_js()` when complete.
 
 ## Configuration Guide
 

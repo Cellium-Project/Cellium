@@ -87,6 +87,9 @@ window.mbQuery(0, 'cell:command:args', function() {})
 | **Cell** | 目标细胞的名称（组件标识符） | `greeter` |
 | **Command** | 细胞要执行的动作 | `greet` |
 | **Args** | 传递给动作的参数（**整体作为单个字符串**） | `你好` |
+| **:async** | 可选后缀，耗时任务提交到线程池执行 | `greeter:greet:你好:async` |
+
+> 💡 **提示**：耗时任务加 `:async` 后缀可避免阻塞 UI，完成后通过 `run_js()` 推送结果。
 
 **协议示例：**
 ```

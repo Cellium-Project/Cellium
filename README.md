@@ -139,10 +139,32 @@ window.mbQuery(0, 'greeter:greet:', function(response) {
 
 #### 4. 命令格式规范
 
-- **格式**：`cell_name:command[:args]`
+- **格式**：`cell_name:command[:args][:async]`
 - **cell_name**：组件的 `cell_name` 属性值（小写字母）
 - **command**：组件 `get_commands()` 中定义的命令名
 - **args**：可选参数，支持简单字符串或 JSON 格式
+- **:async**：可选后缀，耗时任务自动提交到线程池执行，避免阻塞 UI
+
+#### 5. 异步执行（避免阻塞 UI）
+
+耗时任务使用 `:async` 后缀自动后台执行，完成后通过 `run_js()` 推送结果：
+
+```javascript
+// 前端调用，加 :async 后缀
+window.mbQuery(0, 'jstest:delay:3:async', null);
+// 不等待回调，后端完成后自动推送结果
+```
+
+```python
+# 后端组件
+class JsTest(BaseCell):
+    def _cmd_delay(self, seconds: int = 3):
+        time.sleep(seconds)  # 在后台线程执行，不会卡 UI
+        self.run_js(f"alert('耗时任务完成')")  # 推送结果到前端
+        return None
+```
+
+> **提示**：前端传 `null` 作为回调，实现"发完就不管"，后端完成后主动推送。
 
 选择 Cellium：**用你熟悉的 Python 和 Web 技术，快速构建桌面应用。**
 
@@ -489,10 +511,10 @@ class PriorityComponent:
 使用命名空间避免事件名冲突，适合多模块协作。
 
 ```python
-from app.core.bus import set_namespace, event
+from app.core.bus import set_event_namespace, event
 
 # 设置命名空间前缀
-set_namespace("myapp")
+set_event_namespace("myapp")
 
 # 事件名自动添加前缀: myapp.user.login
 class UserModule:
@@ -619,17 +641,6 @@ window.mbQuery(0, `user:create:${userData}`, callback)
 def _cmd_create(self, user_data: dict):
     name = user_data.get('name')  # user_data 已是 dict
     return f"用户 {name} 创建成功"
-```
-
-#### 异步执行支持
-
-耗时操作可使用异步执行避免阻塞 UI：
-
-```python
-# 前端调用时指定 async_exec=True
-window.mbQuery(0, 'file:read:C:/large.txt:async', callback)
-
-# 后端自动提交到线程池，立即返回 "Task submitted to thread pool"
 ```
 
 ### 桥接层 MiniBlinkBridge
@@ -1202,7 +1213,9 @@ window.mbQuery(0, 'mycell:greet:Cellium', function(customMsg, response) {
 # config/settings.yaml
 enabled_components:
   - app.components.calculator.Calculator
-  - app.components.filemanager.FileManager
+  - app.components.greeter.Greeter
+  - app.components.jsontest.JsonTest
+  - app.components.jstest.JsTest
   # - app.components.debug.DebugTool  <-- 注释则不加载
 ```
 

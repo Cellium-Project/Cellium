@@ -87,6 +87,9 @@ window.mbQuery(0, 'cell:command:args', function(){})
 | **Cell** | Target cell name (component identifier) | `greeter` |
 | **Command** | Action to be executed by the cell | `greet` |
 | **Args** | Arguments passed to the action (**passed as a single string**) | `Hello` |
+| **:async** | Optional suffix, submits time-consuming tasks to thread pool | `greeter:greet:Hello:async` |
+
+> 💡 **Tip**: Add `:async` suffix for time-consuming tasks to avoid blocking UI, push result via `run_js() when complete.`
 
 **Protocol Examples:**
 ```

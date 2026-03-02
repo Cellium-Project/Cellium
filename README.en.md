@@ -128,7 +128,32 @@ window.mbQuery(0, 'greeter:greet:', function(response) {
 
 #### 4. Command Format
 
-- **Format**: `cell_name:command[:args]`
+- **Format**: `cell_name:command[:args][:async]`
+- **cell_name**: Component's `cell_name` property value (lowercase)
+- **command**: Command name defined in `get_commands()`
+- **args**: Optional parameter, supports plain string or JSON
+- **:async**: Optional suffix, automatically submits time-consuming tasks to thread pool to avoid blocking UI
+
+#### 5. Async Execution (Avoid Blocking UI)
+
+Use `:async` suffix for time-consuming tasks, execute in background, push result via `run_js()`:
+
+```javascript
+// Frontend call with :async suffix
+window.mbQuery(0, 'jstest:delay:3:async', null);
+// No callback needed, backend pushes result when done
+```
+
+```python
+# Backend component
+class JsTest(BaseCell):
+    def _cmd_delay(self, seconds: int = 3):
+        time.sleep(seconds)  # Executes in background thread, won't block UI
+        self.run_js(f"alert('Task completed')")  # Push result to frontend
+        return None
+```
+
+> **Tip**: Pass `null` as callback to implement "fire and forget", backend pushes result when done.
 
 Choose Cellium: **Build desktop apps quickly with your familiar Python and Web technologies.**
 
@@ -475,10 +500,10 @@ class PriorityComponent:
 Use namespaces to avoid event name conflicts, suitable for multi-module collaboration.
 
 ```python
-from app.core.bus import set_namespace, event
+from app.core.bus import set_event_namespace, event
 
 # Set namespace prefix
-set_namespace("myapp")
+set_event_namespace("myapp")
 
 # Event names automatically get prefix: myapp.user.login
 class UserModule:
@@ -605,17 +630,6 @@ window.mbQuery(0, `user:create:${userData}`, callback)
 def _cmd_create(self, user_data: dict):
     name = user_data.get('name')  # user_data is already a dict
     return f"User {name} created successfully"
-```
-
-#### Async Execution Support
-
-For time-consuming operations, use async execution to avoid blocking UI:
-
-```python
-# Frontend call with async_exec=True
-window.mbQuery(0, 'file:read:C:/large.txt:async', callback)
-
-# Backend automatically submits to thread pool, returns immediately "Task submitted to thread pool"
 ```
 
 ### MiniBlinkBridge

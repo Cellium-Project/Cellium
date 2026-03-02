@@ -398,10 +398,10 @@ class PriorityComponent:
 使用命名空间避免事件名冲突，适合多模块协作。
 
 ```python
-from app.core.bus import set_namespace, event
+from app.core.bus import set_event_namespace, event
 
 # 设置命名空间前缀
-set_namespace("myapp")
+set_event_namespace("myapp")
 
 # 事件名自动添加前缀: myapp.user.login
 class UserModule:
@@ -964,7 +964,21 @@ window.mbQuery(0, 'filemanager:write:C:/test.txt:Hello World', function(customMs
 window.mbQuery(0, 'mycell:greet:Cellium', function(customMsg, response) {
     console.log(response);
 })
+
+// 异步执行（耗时任务），避免阻塞 UI
+window.mbQuery(0, 'mycell:longtask:param:async', function(response) {
+    // 不需要等待结果，可以通过 run_js() 推送结果
+});
 ```
+
+**命令格式**：`cell_name:command[:args][:async]`
+
+- `cell_name`：组件名称
+- `command`：命令名
+- `args`：可选参数
+- `:async`：可选后缀，耗时任务自动提交到线程池，避免阻塞 UI
+
+> 💡 **提示**：耗时任务加 `:async` 后缀，完成后通过 `run_js()` 推送结果到前端。
 
 ## 配置指南
 
