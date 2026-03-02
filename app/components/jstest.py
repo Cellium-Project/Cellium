@@ -11,10 +11,6 @@ class JsTest(BaseCell):
     def __init__(self):
         threading.Thread(target=self._run_time_pusher, daemon=True).start()
 
-    @property
-    def cell_name(self) -> str:
-        return "jstest"
-
     def _run_time_pusher(self):
         while True:
             from datetime import datetime
