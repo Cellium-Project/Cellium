@@ -542,7 +542,7 @@ class FileManager(ICell):
 
 | 方法 | 返回类型 | 说明 |
 |------|---------|------|
-| `cell_name` | `str` | 组件唯一标识，小写字母 |
+| `cell_name` | `str` | 组件唯一标识，小写字母（继承 BaseCell 时可省略） |
 | `execute(command, *args, **kwargs)` | `Any` | 执行命令，返回可序列化结果 |
 | `get_commands()` | `Dict[str, str]` | 返回 {命令名: 命令描述} |
 
@@ -847,15 +847,14 @@ from app.core.window import MainWindow
 # 组件中通过 MainWindow 单例获取 bridge
 class MyComponent:
     def update_ui(self, value):
-        window = MainWindow.get_instance()
-        window.bridge.set_element_value('output', value)
+        self.run_js(f"document.getElementById('output').innerText = '{value}';")
 ```
 
 #### 核心方法
 
 | 方法 | 说明 | 示例 |
 |------|------|------|
-| `send_to_js(script)` | 发送 JS 代码执行 | `bridge.send_to_js("alert('hi')")` |
+| `run_js(script)` | 发送 JS 代码执行 | `self.run_js("alert('hi')")` |
 | `set_element_value(element_id, value)` | 设置元素值 | `bridge.set_element_value('output', '2')` |
 | `get_element_value(element_id, callback)` | 获取元素值（异步） | `bridge.get_element_value('input', callback)` |
 | `setup_all_callbacks()` | 设置所有 MiniBlink 回调 | 初始化时调用 |

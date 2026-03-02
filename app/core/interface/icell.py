@@ -4,8 +4,11 @@
 定义所有组件必须实现的统一接口
 """
 
+import logging
 from abc import abstractmethod
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class ICell:
@@ -60,3 +63,14 @@ class ICell:
                 raise NotImplementedError(
                     f"Component '{self.__class__.__name__}' must implement '{method_name}'"
                 )
+
+    def run_js(self, script: str):
+        """发送 JavaScript 到前端执行
+        
+        Args:
+            script: JavaScript 代码字符串
+        """
+        from app.core.window.main_window import MainWindow
+        main_window = MainWindow.get_instance()
+        if main_window and main_window.bridge:
+            main_window.bridge.send_to_js(script)

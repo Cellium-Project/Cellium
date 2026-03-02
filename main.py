@@ -4,16 +4,12 @@
 """
 
 from app.core import MainWindow, setup_di_container
-from app.core.util import load_components
-from app.core.di.container import get_container
 from app.core.util.logger import setup_logger
 
 def main():
     # 日志级别: DEBUG, INFO, WARNING, ERROR
     setup_logger("app", level="INFO")
     setup_di_container()
-    container = get_container()
-    load_components(container)
     window = MainWindow()
     window.run()
     from app.core.util.mp_manager import MultiprocessManager

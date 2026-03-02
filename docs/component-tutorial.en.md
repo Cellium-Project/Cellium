@@ -235,7 +235,8 @@ def _cmd_greet(self, text: str = "") -> str:
 
 - `execute`: automatically maps commands to `_cmd_` prefixed methods
 - `get_commands`: automatically scans `_cmd_` method docstrings
-- `cell_name`: defaults to lowercase class name (e.g., `Greeter` → `greeter`)
+- `cell_name`: can be omitted when extending BaseCell, defaults to lowercase class name (e.g., `Greeter` → `greeter`)
+- `on_load`: automatically called after component is loaded, used to register event handlers
 - Event registration: automatically calls `register_component_handlers()`
 
 | Feature | Description |
@@ -255,10 +256,15 @@ flowchart LR
     E --> F["Return<br>'Hello Hallo Cellium'"]
 ```
 
-> 💡 **Cell Lifecycle Note**: Since Greeter inherits from `BaseCell`, it automatically has framework-injected `self.mp_manager`, `self.logger`, and `self.event_bus`. You can use them directly in command methods:
+> 💡 **Cell Lifecycle Note**: Since Greeter inherits from `BaseCell`, it has framework-injected `self.event_bus`. You can use it directly in command methods:
 > ```python
+> from app.core.util.mp_manager import get_multiprocess_manager
+> import logging
+> logger = logging.getLogger(__name__)
+> 
 > def _cmd_greet(self, text: str = "") -> str:
->     self.logger.info(f"Received greeting request: {text}")
+>     logger.info(f"Received greeting request: {text}")
+>     mp_manager = get_multiprocess_manager()
 >     return f"{text} Hallo Cellium"
 > ```
 
@@ -539,11 +545,11 @@ bridge = window.bridge
 ### Send JavaScript
 
 ```python
-# Send JS code to execute
-bridge.send_to_js("alert('Hello from backend!');")
+# Send JS code to execute (recommended)
+self.run_js("alert('Hello from backend!');")
 
 # Modify page element
-bridge.send_to_js("document.getElementById('my-div').innerHTML = 'Updated!';")
+self.run_js("document.getElementById('my-div').innerHTML = 'Updated!';")
 ```
 
 ### Complete Example: Timed Time Push
@@ -568,16 +574,11 @@ class JsTest(BaseCell):
 
     def _run_time_pusher(self):
         while True:
-            from app.core.window import MainWindow
-            window = MainWindow.get_instance()
-            if window and window.bridge:
-                from datetime import datetime
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                script = f"document.getElementById('current-time').textContent = 'Current Time: {current_time}';"
-                window.bridge.send_to_js(script)
-                time.sleep(60)  # Push every 60 seconds
-            else:
-                time.sleep(1)
+            from datetime import datetime
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            script = f"document.getElementById('current-time').textContent = 'Current Time: {current_time}';"
+            self.run_js(script)
+            time.sleep(60)
 ```
 
 **Frontend:**
@@ -590,7 +591,7 @@ class JsTest(BaseCell):
 
 | Method | Description | Example |
 |--------|-------------|---------|
-| `send_to_js(script)` | Send JS code to execute | `bridge.send_to_js("alert('hi')")` |
+| `run_js(script)` | Send JS code to execute | `self.run_js("alert('hi')")` |
 | `set_element_value(element_id, value)` | Set element value | `bridge.set_element_value('output', '2')` |
 | `get_element_value(element_id, callback)` | Get element value (async) | `bridge.get_element_value('input', callback)` |
 
@@ -603,4 +604,4 @@ class JsTest(BaseCell):
    # In bridge, comment out _setup_alert_callback() call
    ```
 
-3. **Thread safety**: `send_to_js` can be called from child threads, the framework handles thread safety
+3. **Thread safety**: `run_js` can be called from child threads, the framework handles thread safety

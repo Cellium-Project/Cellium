@@ -525,6 +525,11 @@ class MyCell(ICell):
         return {
             "greet": "Greet, e.g., mycell:greet:Alice"
         }
+    
+    def run_js(self, script: str):
+        """Send JavaScript to frontend for execution"""
+        # ICell provides default implementation, component can call directly
+        # self.run_js("alert('hello')")
 ```
 
 #### BaseCell (Recommended)
@@ -546,8 +551,10 @@ class MyCell(BaseCell):
 **Auto Features:**
 - Command mapping: `greet` → `_cmd_greet()`
 - Command list: auto-scan docstring
+- on_load: automatically called after component is loaded
 - Event registration: auto-call `register_component_handlers()`
-- Default cell_name: use class name lowercase
+- cell_name: can be omitted when extending BaseCell, defaults to lowercase class name
+- JS execution: call `self.run_js(script)` to manipulate frontend
 
 ### MessageHandler
 

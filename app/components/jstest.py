@@ -17,13 +17,8 @@ class JsTest(BaseCell):
 
     def _run_time_pusher(self):
         while True:
-            from app.core.window import MainWindow
-            window = MainWindow.get_instance()
-            if window and hasattr(window, 'bridge') and window.bridge:
-                from datetime import datetime
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                script = f"document.getElementById('current-time').textContent = '当前时间: {current_time}';"
-                window.bridge.send_to_js(script)
-                time.sleep(60)
-            else:
-                time.sleep(1)
+            from datetime import datetime
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            script = f"document.getElementById('current-time').textContent = '当前时间: {current_time}';"
+            self.run_js(script)
+            time.sleep(1)

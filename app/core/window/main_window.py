@@ -655,5 +655,11 @@ class MainWindow:
             self.lib.mbMoveToCenter(self.webview)
         except Exception as e:
             logger.error(f"显示窗口失败: {e}")
+        
+        # 窗口就绪后加载组件
+        from app.core.util import load_components
+        from app.core.di.container import get_container
+        container = get_container()
+        load_components(container)
            
         self.run_message_loop()

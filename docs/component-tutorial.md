@@ -233,7 +233,8 @@ def _cmd_greet(self, text: str = "") -> str:
 
 - `execute`：自动将命令映射到 `_cmd_` 前缀的方法
 - `get_commands`：自动扫描 `_cmd_` 方法的文档字符串
-- `cell_name`：默认为类名的小写形式（如 `Greeter` → `greeter`）
+- `cell_name`：继承 BaseCell 时可省略，默认使用类名小写（如 `Greeter` → `greeter`）
+- `on_load`：组件加载后自动调用，可用于注册事件处理器
 - 事件注册：自动调用 `register_component_handlers()`
 
 | 特性 | 说明 |
@@ -253,10 +254,15 @@ flowchart LR
     E --> F["返回<br>'你好 Hallo Cellium'"]
 ```
 
-> 💡 **细胞生命周期提示**：由于 Greeter 继承自 `BaseCell`，它已经自动获得了框架注入的 `self.mp_manager`、`self.logger` 和 `self.event_bus`。你可以在命令方法里直接使用：
+> 💡 **细胞生命周期提示**：由于 Greeter 继承自 `BaseCell`，它已经自动获得了框架注入的 `self.event_bus`。你可以在命令方法里直接使用：
 > ```python
+> from app.core.util.mp_manager import get_multiprocess_manager
+> import logging
+> logger = logging.getLogger(__name__)
+> 
 > def _cmd_greet(self, text: str = "") -> str:
->     self.logger.info(f"收到问候请求: {text}")
+>     logger.info(f"收到问候请求: {text}")
+>     mp_manager = get_multiprocess_manager()
 >     return f"{text} Hallo Cellium"
 > ```
 
@@ -538,10 +544,10 @@ bridge = window.bridge
 
 ```python
 # 发送 JS 代码执行
-bridge.send_to_js("alert('Hello from backend!');")
+self.run_js("alert('Hello from backend!');")
 
 # 修改页面元素
-bridge.send_to_js("document.getElementById('my-div').innerHTML = 'Updated!';")
+self.run_js("document.getElementById('my-div').innerHTML = 'Updated!';")
 ```
 
 ### 完整示例：定时推送时间
@@ -566,16 +572,11 @@ class JsTest(BaseCell):
 
     def _run_time_pusher(self):
         while True:
-            from app.core.window import MainWindow
-            window = MainWindow.get_instance()
-            if window and window.bridge:
-                from datetime import datetime
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                script = f"document.getElementById('current-time').textContent = '当前时间: {current_time}';"
-                window.bridge.send_to_js(script)
-                time.sleep(60)  # 每 60 秒推送一次
-            else:
-                time.sleep(1)
+            from datetime import datetime
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            script = f"document.getElementById('current-time').textContent = '当前时间: {current_time}';"
+            self.run_js(script)
+            time.sleep(60)
 ```
 
 **前端页面：**
@@ -588,7 +589,7 @@ class JsTest(BaseCell):
 
 | 方法 | 说明 | 示例 |
 |------|------|------|
-| `send_to_js(script)` | 发送 JS 代码执行 | `bridge.send_to_js("alert('hi')")` |
+| `run_js(script)` | 发送 JS 代码执行 | `self.run_js("alert('hi')")` |
 | `set_element_value(element_id, value)` | 设置元素值 | `bridge.set_element_value('output', '2')` |
 | `get_element_value(element_id, callback)` | 获取元素值（异步） | `bridge.get_element_value('input', callback)` |
 

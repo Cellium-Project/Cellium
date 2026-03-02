@@ -536,7 +536,7 @@ All components must implement the following three methods:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `cell_name` | `str` | Component identifier, lowercase letters |
+| `cell_name` | `str` | Component identifier, lowercase letters (can be omitted when extending BaseCell) |
 | `execute(command, *args, **kwargs)` | `Any` | Execute command, return serializable result |
 | `get_commands()` | `Dict[str, str]` | Returns {command name: command description} |
 
@@ -633,15 +633,14 @@ from app.core.window import MainWindow
 # Components get bridge through MainWindow singleton
 class MyComponent:
     def update_ui(self, value):
-        window = MainWindow.get_instance()
-        window.bridge.set_element_value('output', value)
+        self.run_js(f"document.getElementById('output').innerText = '{value}';")
 ```
 
 #### Core Methods
 
 | Method | Description | Example |
 |--------|-------------|---------|
-| `send_to_js(script)` | Send JS code for execution | `bridge.send_to_js("alert('hi')")` |
+| `run_js(script)` | Send JS code for execution | `self.run_js("alert('hi')")` |
 | `set_element_value(element_id, value)` | Set element value | `bridge.set_element_value('output', '2')` |
 | `get_element_value(element_id, callback)` | Get element value (async) | `bridge.get_element_value('input', callback)` |
 | `setup_all_callbacks()` | Setup all MiniBlink callbacks | Call during initialization |

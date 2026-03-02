@@ -539,6 +539,11 @@ class MyCell(ICell):
         return {
             "greet": "打招呼，例如: mycell:greet:Alice"
         }
+    
+    def run_js(self, script: str):
+        """发送 JavaScript 到前端执行"""
+        # ICell 已提供默认实现，组件可直接调用
+        # self.run_js("alert('hello')")
 ```
 
 #### 基础组件 BaseCell（推荐）
@@ -560,8 +565,10 @@ class MyCell(BaseCell):
 **自动功能：**
 - 命令映射：`greet` → `_cmd_greet()`
 - 命令列表：自动扫描 docstring
+- on_load：组件加载后自动调用
 - 事件注册：自动调用 `register_component_handlers()`
-- 默认 cell_name：使用类名小写
+- cell_name：继承 BaseCell 时可省略，默认使用类名小写
+- JS 执行：直接调用 `self.run_js(script)` 操作前端
 
 ### 消息处理器 MessageHandler
 
