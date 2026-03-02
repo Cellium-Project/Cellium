@@ -241,14 +241,14 @@
         #event-log {
             width: 320px;
             flex-shrink: 0;
-            height: 100px;
+            height: 150px;
             background: rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
+            border-radius: 24px;
             padding: 12px;
             font-size: 12px;
             color: #70757a;
             border: 1px solid rgba(224, 224, 224, 0.5);
-            overflow-y: auto;
+            overflow: hidden;
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
         }
@@ -259,12 +259,34 @@
             font-family: monospace;
         }
 
+        .log-content {
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .log-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .log-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .log-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
         .greeter-section {
             width: 320px;
             flex-shrink: 0;
             padding: 16px;
             background: rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
+            border-radius: 24px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -465,7 +487,9 @@
         </div>
 
         <div id="event-log">
-            <div class="log-entry">准备就绪...</div>
+            <div class="log-content">
+                <div class="log-entry">准备就绪...</div>
+            </div>
         </div>
     </div>
 
@@ -473,7 +497,7 @@
         let calcExpression = '';
 
         function logEvent(message) {
-            const log = document.getElementById('event-log');
+            const log = document.querySelector('#event-log .log-content');
             const entry = document.createElement('div');
             entry.className = 'log-entry';
             entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
