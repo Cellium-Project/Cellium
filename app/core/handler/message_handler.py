@@ -124,25 +124,29 @@ class MessageHandler:
         logger.info(f"执行命令: {cell_name}:{cmd}:{args_str}")
         
         if async_exec:
-            return self._execute_async(cell, cmd, args)
+            return self._execute_async(cell, cmd, args_str, args)
         
         try:
-            return cell.execute(cmd, args)
+            result = cell.execute(cmd, args)
+            logger.info(f"执行结果: {cell_name}:{cmd}:{args_str} -> {result}")
+            return result
         except Exception as e:
             logger.error(f"命令执行失败: {cell_name}:{cmd}, 错误: {e}")
             return f"Error: {str(e)}"
     
-    def _execute_async(self, cell: ICell, cmd: str, args: Any) -> str:
+    def _execute_async(self, cell: ICell, cmd: str, args_str: str, args: Any) -> str:
         """异步执行组件命令（提交到线程池）"""
+        full_command = f"{cell.cell_name}:{cmd}:{args_str}"
+        
         def run():
             try:
-                return cell.execute(cmd, args)
+                cell.execute(cmd, args)
+                logger.info(f"async {full_command} True")
             except Exception as e:
-                logger.error(f"异步命令执行失败: {cell.cell_name}:{cmd}, 错误: {e}")
-                return f"Error: {str(e)}"
+                logger.error(f"async {full_command} False - 错误: {e}")
         
-        future = _executor.submit(run)
-        return "Task submitted to thread pool"
+        _executor.submit(run)
+        return f"async {full_command}"
     
     def _handle_titlebar_command(self, cmd: str, args: str) -> str:
         """处理标题栏命令"""
@@ -169,7 +173,6 @@ class MessageHandler:
             return
         
         result = self._handle_cell_command(msg_str)
-        logger.info(f"[INFO] 执行结果: {result}")
     
     def _on_jsquery_message(self, event: JsQueryEvent):
         """处理 JsQuery 消息
@@ -190,7 +193,7 @@ class MessageHandler:
         return self._handle_cell_command(msg_str, async_exec=async_exec)
     
     def _on_python_command(self, command):
-        """处理来自 JavaScript 的命令
+        """用于单元测试/调试，直接调用组件命令
         
         统一命令格式：组件名:命令:参数
         """
@@ -205,7 +208,6 @@ class MessageHandler:
             cell = self.get_cell(cell_name)
             if cell:
                 result = self._handle_cell_command(command)
-                logger.info(f"[INFO] 执行结果: {result}")
             else:
                 logger.warning(f"[WARN] 组件不存在: {cell_name}")
         else:
