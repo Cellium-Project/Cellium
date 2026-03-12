@@ -391,17 +391,15 @@ flowchart TB
         DI["DIContainer"]
         MP["MultiprocessManager"]
         WM["WindowManager"]
+        TB["TitleBarHandler"]
         Components["Component Units"]
     end
 
-    MH -.->|"Scheduling Coordination"| EB
-    EB -.->|"Event Communication"| MH
-    
-    DI -->|"Dependency Injection"| MH
-    MP -->|"Process Management"| MH
-    WM -->|"Window Management"| MH
-    
-    MH & DI & MP & WM -->|"Component Coordination"| Components
+    WM -->|"Creates"| MH
+    MH -->|"Subscribes to"| EB
+    TB -->|"Subscribes to"| EB
+    MP -->|"Used by"| MH
+    DI -->|"Registers"| Components
 ```
 
 ### EventBus

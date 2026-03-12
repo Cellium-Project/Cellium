@@ -402,17 +402,15 @@ flowchart TB
         DI["DIContainer"]
         MP["MultiprocessManager"]
         WM["WindowManager"]
+        TB["TitleBarHandler"]
         Components["组件单元"]
     end
 
-    MH -.->|"调度协调"| EB
-    EB -.->|"事件通信"| MH
-
-    DI -->|"依赖注入"| MH
-    MP -->|"进程管理"| MH
-    WM -->|"窗口管理"| MH
-
-    MH & DI & MP & WM -->|"组件协调"| Components
+    WM -->|"创建"| MH
+    MH -->|"订阅"| EB
+    TB -->|"订阅"| EB
+    MP -->|"使用"| MH
+    DI -->|"注册"| Components
 ```
 
 ### 事件总线 EventBus
