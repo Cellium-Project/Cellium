@@ -6,9 +6,9 @@ python -m nuitka --standalone --onefile ^
 --windows-console-mode=attach ^
 --windows-icon-from-ico=app_icon.ico ^
 --output-dir="dist" ^
---output-filename="Cellium Converter.exe" ^
---company="Cellium Converter" ^
---product-name="Cellium Converter" ^
+--output-filename="Cellium.exe" ^
+--company="Cellium App" ^
+--product-name="Cellium App" ^
 --file-version=1.0.0.0 ^
 --product-version=1.0.0.0 ^
 --copyright="Copyright (c) 2026 Cellium Contributors" ^
