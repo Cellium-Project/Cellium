@@ -126,6 +126,46 @@ def query_database():
     pass
 ```
 
+## Frontend Logging
+
+Frontend logs are automatically forwarded to the Python logging system via the MiniBlink engine, no additional configuration required.
+
+### Basic Usage
+
+```javascript
+console.log("Debug info");
+console.info("General info");
+console.warn("Warning info");
+console.error("Error info");
+console.debug("Debug info");
+```
+
+### Output Example
+
+```
+[CONSOLE][LOG] Debug info (file:index.html:10)
+[CONSOLE][INFO] General info (file:index.html:11)
+[CONSOLE][WARNING] Warning info (file:index.html:12)
+[CONSOLE][ERROR] Error info (file:index.html:13)
+[CONSOLE][DEBUG] Debug info (file:index.html:14)
+```
+
+### Log Level Mapping
+
+| Frontend Method | Backend Log Level |
+|-----------------|-------------------|
+| `console.log()` | LOG |
+| `console.info()` | INFO |
+| `console.warn()` | WARNING |
+| `console.error()` | ERROR |
+| `console.debug()` | DEBUG |
+
+### Notes
+
+- Frontend logs are output to Python console by default
+- Log level depends on the specific method called in frontend
+- File path and line number are automatically recorded for easy debugging
+
 ## Using Logging in Components
 
 ### Example: Calculator Component

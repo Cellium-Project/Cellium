@@ -126,6 +126,46 @@ def query_database():
     pass
 ```
 
+## 前端日志
+
+前端日志通过 MiniBlink 引擎自动转发到 Python 日志系统，无需额外配置。
+
+### 基本使用
+
+```javascript
+console.log("调试信息");
+console.info("普通信息");
+console.warn("警告信息");
+console.error("错误信息");
+console.debug("调试信息");
+```
+
+### 输出示例
+
+```
+[CONSOLE][LOG] 调试信息 (file:index.html:10)
+[CONSOLE][INFO] 普通信息 (file:index.html:11)
+[CONSOLE][WARNING] 警告信息 (file:index.html:12)
+[CONSOLE][ERROR] 错误信息 (file:index.html:13)
+[CONSOLE][DEBUG] 调试信息 (file:index.html:14)
+```
+
+### 日志级别对应
+
+| 前端方法 | 后端日志级别 |
+|----------|-------------|
+| `console.log()` | LOG |
+| `console.info()` | INFO |
+| `console.warn()` | WARNING |
+| `console.error()` | ERROR |
+| `console.debug()` | DEBUG |
+
+### 注意事项
+
+- 前端日志默认会输出到 Python 控制台
+- 日志级别取决于前端调用的具体方法
+- 文件路径和行号会自动记录，方便定位问题
+
 ## 在组件中使用日志
 
 ### 示例：计算器组件
