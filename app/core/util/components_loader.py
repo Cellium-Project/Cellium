@@ -113,7 +113,7 @@ def load_components(container: DIContainer, debug: bool = False) -> Dict[str, An
     config_path = get_config_path()
     config = load_component_config(config_path)
     
-    component_list = config.get("enabled_components", [])
+    component_list = config.get("enabled_components", []) or []
     loaded_components = {}
     
     logger.info(f"开始加载组件，共 {len(component_list)} 个配置项")
